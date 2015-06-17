@@ -16,6 +16,11 @@
 #define pi 3.14159265359
 #define DEGREES_TO_RADIANS(degrees) ((pi * degrees)/ 180)
 
+//Battery Gauge 2
+#define BatteryGauge2Width [UIScreen mainScreen].bounds.size.width*0.4
+#define BatteryGauge2PosX [UIScreen mainScreen].bounds.size.width/2-BatteryGauge2Width/2
+#define BatteryGauge2PosY 250
+
 
 @interface ViewController ()
 
@@ -23,6 +28,7 @@
 @property (nonatomic) int CurrentBatteryLifeNumber;
 @property (nonatomic) int NewBatteryLifeNumber;
 @property (strong, nonatomic) UILabel *BatteryLifeLabel;
+@property (strong, nonatomic) UIView *BatteryLifeMark;
 @property (nonatomic, strong) CAShapeLayer *arrowLayer;
 @property (strong, nonatomic) NSTimer *UITimer;
 @property (weak, nonatomic) IBOutlet UIButton *ButtonOutlet;
@@ -84,7 +90,7 @@
     
     _arrowLayer = [CAShapeLayer layer];
     _arrowLayer.frame = CGRectMake(BatteryGauge1PosX, BatteryGauge1PosY, 0, 0);
-    UIBezierPath *linePath=[UIBezierPath bezierPath];
+    UIBezierPath *linePath = [UIBezierPath bezierPath];
     [linePath moveToPoint: CGPointMake(0, 0)];
     [linePath addLineToPoint:CGPointMake(0-BatteryGauge1Width/2-15, 0)];
     _arrowLayer.path=linePath.CGPath;
@@ -108,6 +114,31 @@
     _BatteryLifeLabel.textColor = [UIColor whiteColor];
     _BatteryLifeLabel.font = [UIFont fontWithName:@"Helvetica" size:24.0];
     [self.view addSubview:_BatteryLifeLabel];
+    
+    //draw battery gauge 2
+    CAShapeLayer *battery2Layer = [CAShapeLayer layer];
+    battery2Layer.frame = CGRectMake(BatteryGauge2PosX, BatteryGauge2PosY, 0, 0);
+    UIBezierPath *linePath2 = [UIBezierPath bezierPath];
+    [linePath2 moveToPoint: CGPointMake(0, 0)];
+    [linePath2 addLineToPoint:CGPointMake(BatteryGauge2Width, 0)];
+    [linePath2 addLineToPoint:CGPointMake(BatteryGauge2Width, BatteryGauge2Width/3)];
+    [linePath2 addLineToPoint:CGPointMake(0, BatteryGauge2Width/3)];
+    [linePath2 addLineToPoint:CGPointMake(0, 0)];
+    [linePath2 moveToPoint: CGPointMake(BatteryGauge2Width, BatteryGauge2Width/8)];
+    [linePath2 addLineToPoint:CGPointMake(BatteryGauge2Width+5, BatteryGauge2Width/8)];
+    [linePath2 addLineToPoint:CGPointMake(BatteryGauge2Width+5, BatteryGauge2Width/5)];
+    [linePath2 addLineToPoint:CGPointMake(BatteryGauge2Width, BatteryGauge2Width/5)];
+    battery2Layer.path = linePath2.CGPath;
+    battery2Layer.fillColor = nil;
+    battery2Layer.lineWidth = 1;
+    battery2Layer.opacity = 4;
+    battery2Layer.strokeColor = [[UIColor whiteColor] CGColor];
+    [[self.view layer] addSublayer:battery2Layer];
+    
+    //draw the battery life mark for battery gauge 2
+    _BatteryLifeMark = [[UIView alloc] initWithFrame:CGRectMake(BatteryGauge2PosX+2, BatteryGauge2PosY+2, 0, BatteryGauge2Width/3-4)];
+    _BatteryLifeMark.backgroundColor = [UIColor greenColor];
+    [self.view addSubview:_BatteryLifeMark];
 }
 
 //set to white status bar
@@ -164,6 +195,7 @@
     self.UITimer = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(BatteryLifeNumberChange) userInfo:nil repeats: YES];
     //start the animation of battery gauge 1 arraw rotation
     [self BatteryLifeArrowChange];
+    [self BatteryLifeMarkChange];
     _BatteryLifeNumber = _NewBatteryLifeNumber;
 }
 
@@ -198,6 +230,17 @@
     //animation.removedOnCompletion = NO;
     //animation.fillMode = kCAFillModeForwards;
     [self.arrowLayer addAnimation:animation forKey:@"rotateAnimation"];
+}
+
+- (void)BatteryLifeMarkChange{
+    //calculate the length of the mark change
+    int length = _NewBatteryLifeNumber*(BatteryGauge2Width-4)/100;
+    //calculate the time of the animation
+    int time = fabs((_NewBatteryLifeNumber-_BatteryLifeNumber)*0.1);
+    
+    [UIView animateWithDuration:time animations:^{
+        _BatteryLifeMark.frame = CGRectMake(BatteryGauge2PosX+2, BatteryGauge2PosY+2, length, BatteryGauge2Width/3-4);
+    }completion:nil];
 }
 
 - (void)didReceiveMemoryWarning {
