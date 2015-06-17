@@ -45,7 +45,7 @@
     self.view.backgroundColor = [UIColor colorWithRed:48/255.0f green:108/255.0f blue:115/255.0f alpha:1.0f];
 
     
-    //draw battery gauge 1
+    //draw battery gauge 1 interface
     CAShapeLayer *markLayer1 = [CAShapeLayer layer];
     [markLayer1 setPath:[[UIBezierPath bezierPathWithArcCenter:CGPointMake(BatteryGauge1PosX, BatteryGauge1PosY) radius:BatteryGauge1Width/2-17 startAngle:DEGREES_TO_RADIANS(180) endAngle:DEGREES_TO_RADIANS(198) clockwise:YES] CGPath]];
     [markLayer1 setStrokeColor:[[UIColor redColor] CGColor]];
@@ -115,7 +115,7 @@
     _BatteryLifeLabel.font = [UIFont fontWithName:@"Helvetica" size:24.0];
     [self.view addSubview:_BatteryLifeLabel];
     
-    //draw battery gauge 2
+    //draw battery gauge 2 interface
     CAShapeLayer *battery2Layer = [CAShapeLayer layer];
     battery2Layer.frame = CGRectMake(BatteryGauge2PosX, BatteryGauge2PosY, 0, 0);
     UIBezierPath *linePath2 = [UIBezierPath bezierPath];
@@ -147,7 +147,7 @@
     return UIStatusBarStyleLightContent;
 }
 
-//Set Battery Life button event
+//set Battery Life button event
 - (IBAction)Button:(UIButton *)sender {
     //pop-up an alert window
     UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Set Battery Life"
@@ -168,12 +168,16 @@
     
     switch (buttonIndex) {
         case 0:
+            //"cancel" button
             break;
         case 1:
+            //"set" button
+            //if no input, do nothing
             if([[[alertView textFieldAtIndex:0] text] isEqual:@""]){
                 break;
             }
             int intNumber = [[[alertView textFieldAtIndex:0] text] intValue];
+            //if the input value > 100, pop-up an error message
             if(intNumber>100){
                 UIAlertView * alert =[[UIAlertView alloc ] initWithTitle:@"Invalid Number"
                                                                  message:@"Battery life value must be between 0 to 100."
@@ -183,18 +187,21 @@
                 [alert show];
                 break;
             }
+            //if the input value between 0 to 100, pass the value to NewBatteryLifeNumber variable
             _NewBatteryLifeNumber = intNumber;
             break;
     }
     
 }
 
+//start the animation after the alertView disappeared
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex;{
     _CurrentBatteryLifeNumber = _BatteryLifeNumber;
     //start the animation of battery gauge 1 text change
     self.UITimer = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(BatteryLifeNumberChange) userInfo:nil repeats: YES];
     //start the animation of battery gauge 1 arraw rotation
     [self BatteryLifeArrowChange];
+    //start the animation of battery gauge 2 mark change
     [self BatteryLifeMarkChange];
     _BatteryLifeNumber = _NewBatteryLifeNumber;
 }
